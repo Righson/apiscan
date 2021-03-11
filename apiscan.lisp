@@ -3,6 +3,7 @@
 (in-package #:apiscan)
 
 (ql:quickload :drakma)
+(ql:quickload :flexi-streams)
 
 (defvar *environment* '())
 
@@ -28,16 +29,29 @@
         (format nil "~A=~A" f s))))
 
 (defun make-caller-http (url) (lambda (method)
-                                (drakma:http-request (format nil "http://~A/~A" url method))))
+                                (let ((u (format nil "http://~A/~A" url method)))
+                                (call-api u))))
+
 (defun make-caller-http-with-params (url) (lambda (method params)
-                                            (drakma:http-request (format nil "http://~A/~A?~A" url method
-                                                    (params-list->string (list->pairs params))))))
+                                            (let ((u (format nil "http://~A/~A?~A" url method (params-list->string (list->pairs params)))))
+                                            (call-api u))))
 
 (defun call-api (url)
-  (dra))
+  (with-input-from-string
+      (s (flexi-streams:octets-to-string (drakma:http-request url)))
+    (json:decode-json s)))
 
 (defun make-urls (api-answer path)
   )
+
+(defun scan (col key)
+  (let* ((f (first col))
+         (k (first f))
+         (n (rest col)))
+         (if (eq key k) (cdr f)
+             (if (null n)
+                 nil
+                 (scan n key)))))
 
 (defun get-in (col path)
   (let ((path-element (first path)))
