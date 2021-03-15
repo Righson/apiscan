@@ -41,7 +41,7 @@
       (s (flexi-streams:octets-to-string (drakma:http-request url)))
     (json:decode-json s)))
 
-(defun make-urls (api-answer path)
+(defun make-urls ()
   )
 
 (defun scan (col key)
@@ -53,6 +53,12 @@
                  nil
                  (scan n key)))))
 
+(defun scan-in (col find &optional acc)
+  (let ((el (scan (first col) find)))
+    (if (null el)
+        acc
+        (scan-in (rest col) find (append acc (list el))))))
+
 (defun get-in (col path)
   (let ((path-element (first path)))
     (if (and (listp col)
@@ -61,3 +67,5 @@
             (rest col)
             (get-in (first (rest col)) (rest path)))
         nil)))
+
+;; (mapcar #'parse-integer (scan-in cache :code '()))
