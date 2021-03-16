@@ -5,10 +5,15 @@
 (ql:quickload :drakma)
 (ql:quickload :flexi-streams)
 
-(defvar *environment* '())
+(defparameter *environment* (make-hash-table))
+(defparameter *host* "")
 
 (defun set-env-params! (param value)
-  (setq *environment* (append *environment* (list param value))))
+  (setf (gethash param *environment*) (list value))
+  *environment*)
+
+(defun set-host! (host)
+  (setq *host* host))
 
 (defun keyword->string (kwrd)
   (string-downcase (string kwrd)))
@@ -20,29 +25,42 @@
         nil
         (cons (list frst scnd) (list->pairs (cddr lst))))))
 
-(defun params-list->string (params-lst)
-  (let* ((frst (car params-lst))
-         (f (keyword->string (first frst)))
-         (s (second frst)))
-    (if (not (null (rest params-lst)))
-        (format nil "~A=~A&~A" f s (params-list->string (rest params-lst)))
-        (format nil "~A=~A" f s))))
+(defun params-list (hash)
+  (let ((ret ""))
+    (maphash #'(lambda (k v)
+                 (let ((ks (keyword->string k))
+                       (vs (first v)))
+                   (if (= 0 (length ret))
+                       (setq ret (format nil "~A=~A" ks vs))
+                       (setq ret (format nil "~A&~A=~A" ret ks vs))))) hash)
+    ret))
 
-(defun make-caller-http (url) (lambda (method)
-                                (let ((u (format nil "http://~A/~A" url method)))
-                                (call-api u))))
+(defun list->string (col)
+  (params-list->string (list->pairs col)))
 
-(defun make-caller-http-with-params (url) (lambda (method params)
-                                            (let ((u (format nil "http://~A/~A?~A" url method (params-list->string (list->pairs params)))))
-                                            (call-api u))))
+(defun make-caller-http (url)
+  (lambda (method)
+    (let ((u (format nil "http://~A/~A" url method)))
+      (call-api u))))
+
+(defun make-caller-http-with-params (url)
+  (lambda (method params)
+    (let ((u (format nil "http://~A/~A?~A" url method (params-list params))))
+      (call-api u))))
 
 (defun call-api (url)
   (with-input-from-string
       (s (flexi-streams:octets-to-string (drakma:http-request url)))
     (json:decode-json s)))
 
-(defun make-urls ()
-  )
+(defun make-urls! (col keys)
+  (mapcar
+   (lambda (x)
+     (format nil "~A?~A"
+             *host*
+             (params-list (set-env-params! (first keys) x))))
+   col))
+
 
 (defun scan (col key)
   (let* ((f (first col))
