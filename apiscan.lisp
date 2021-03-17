@@ -53,14 +53,14 @@
       (s (flexi-streams:octets-to-string (drakma:http-request url)))
     (json:decode-json s)))
 
-(defun make-urls! (col keys)
+(defun make-urls! (method col keys)
   (mapcar
    (lambda (x)
-     (format nil "~A?~A"
+     (format nil "~A/~A/?~A"
              *host*
+             method
              (params-list (set-env-params! (first keys) x))))
    col))
-
 
 (defun scan (col key)
   (let* ((f (first col))
