@@ -8,6 +8,12 @@
 (defparameter *environment* (make-hash-table))
 (defparameter *host* "")
 
+(defun call-api (url)
+  (with-input-from-string
+      (s (flexi-streams:octets-to-string (drakma:http-request url)))
+    (json:decode-json s)))
+
+
 (defun set-env-params! (param value)
   (setf (gethash param *environment*) (list value))
   *environment*)
@@ -35,8 +41,6 @@
                        (setq ret (format nil "~A&~A=~A" ret ks vs))))) hash)
     ret))
 
-(defun list->string (col)
-  (params-list->string (list->pairs col)))
 
 (defun make-caller-http (url)
   (lambda (method)
@@ -48,10 +52,6 @@
     (let ((u (format nil "http://~A/~A?~A" url method (params-list params))))
       (call-api u))))
 
-(defun call-api (url)
-  (with-input-from-string
-      (s (flexi-streams:octets-to-string (drakma:http-request url)))
-    (json:decode-json s)))
 
 (defun make-urls! (method col keys)
   (mapcar
@@ -86,4 +86,4 @@
             (get-in (first (rest col)) (rest path)))
         nil)))
 
-;; (mapcar #'parse-integer (scan-in cache :code '()))
+;; ;; (mapcar #'parse-integer (scan-in cache :code '()))
