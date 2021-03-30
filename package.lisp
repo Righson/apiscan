@@ -1,4 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:apiscan
-  (:use #:cl))
+  (:use #:cl)
+  (:export #:keyword->string
+           #:scan
+           #:scan-in))
