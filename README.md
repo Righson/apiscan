@@ -1,9 +1,8 @@
 # apiscan
-### _Your Name <your.name@example.com>_
+### _Your Name <free.fhh@gmail.com>_
 
-This is a project to do ... something.
+Simple program to test your api
 
 ## License
 
-Specify license here
-
+MIT https://mit-license.org/
