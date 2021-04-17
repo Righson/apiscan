@@ -77,13 +77,4 @@
         acc
         (scan-in (rest col) find (append acc (list el))))))
 
-(defun get-in (col path)
-  (let ((path-element (first path)))
-    (if (and (listp col)
-             (eq (first col) path-element))
-        (if (null (rest path))
-            (rest col)
-            (get-in (first (rest col)) (rest path)))
-        nil)))
-
 ;; ;; (mapcar #'parse-integer (scan-in cache :code '()))
